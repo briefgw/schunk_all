@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<launch>
+  <!--
+   <rosparam command="load" file="$(find table_schunk_moveit_config)/config/joint_names.yaml"/>
+   -->
+  <!-- the "sim" argument controls whether we connect to a Simulated or Real robot -->
+  <!--  - if sim=false, a robot_ip argument is required -->
+  <arg name="sim" default="false" />
+  <arg name="robot_ip" unless="$(arg sim)" />
+
+  <!-- load the robot_description parameter before launching ROS-I nodes -->
+  <include file="$(find table_schunk_moveit_config)/launch/planning_context.launch" >
+    <arg name="load_robot_description" value="true" />
+  </include>
+
+  <!-- run the "real robot" interface nodes
+  <include file="$(find schunk_lwa4p)/launch/robot.launch" >
+  </include>
+   -->
+  <!-- publish the robot state (tf transforms) -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <include file="$(find table_schunk_moveit_config)/launch/move_group.launch">
+   <arg name="allow_trajectory_execution" default="true"/>
+   <arg name="fake_execution" default="false"/>
+   <arg name="max_safe_path_cost" default="1"/>
+   <arg name="jiggle_fraction" default="0.05" />
+   <arg name="publish_monitored_planning_scene" default="true"/>
+  </include>
+
+  <include file="$(find table_schunk_moveit_config)/launch/moveit_rviz.launch">
+    <arg name="config" value="true"/>
+  </include>
+  <!--
+  <include file="$(find moveit_config)/launch/default_warehouse_db.launch" />
+  -->
+  <include ns="moveit_controller_manager" file="$(find table_schunk_moveit_config)/launch/planning_pipeline.launch.xml">
+    <arg name="pipeline" value="ompl" />
+  </include>
+
+</launch>
